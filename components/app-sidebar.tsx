@@ -164,7 +164,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <SidebarProvider>
-      <Sidebar variant="floating" {...props}>
+      <Sidebar className="w-3/12" variant="floating" {...props}>
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
