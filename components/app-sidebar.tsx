@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, GalleryVerticalEnd } from "lucide-react"; // Added ChevronRight
+import { ChevronRight } from "lucide-react"; // Added ChevronRight
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,6 +21,7 @@ import {
 
   // Removed SidebarGroupLabel and SidebarRail as they are not used in the user's provided code
 } from "@/components/ui/sidebar";
+import { Separator } from "./ui/separator";
 
 // This is sample data.
 const data = {
@@ -172,19 +173,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Sidebar variant="floating" {...props}>
         <SidebarHeader>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton className="mt-12" size="lg" asChild>
-                <a href="#">
-                  <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                    <GalleryVerticalEnd className="size-4" />
-                  </div>
-                  <div className="flex flex-col gap-0.5 leading-none">
-                    <span className="font-medium">Documentation</span>
-                    <span className="">v1.0.0</span>
-                  </div>
-                </a>
-              </SidebarMenuButton>
+            <SidebarMenuItem className="mt-16 md:mt-0">
+              <h3 className="ml-2 text-2xl">
+                <span className="font-normal">Dev</span>
+                <span className="text-primary font-extrabold">Cards</span>
+              </h3>
             </SidebarMenuItem>
+            <Separator />
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>

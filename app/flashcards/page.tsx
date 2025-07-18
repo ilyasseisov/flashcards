@@ -9,10 +9,10 @@ const Page = () => {
   return (
     <>
       <main className="grid grid-cols-12 gap-4">
-        <section className="col-span-3 bg-amber-50">
+        <section className="col-span-3">
           <LeftSidebar />
         </section>
-        <section className="col-span-9 bg-blue-50"></section>
+        <section className="col-span-9"></section>
       </main>
     </>
   );
