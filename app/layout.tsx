@@ -5,16 +5,11 @@ import localFont from "next/font/local";
 // font declaration
 export const rota = localFont({
   src: [
-    {
-      path: "../public/fonts/Rota-Regular.otf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/Rota-Medium.otf",
-      weight: "500",
-      style: "normal",
-    },
+    // {
+    //   path: "../public/fonts/Rota-Medium.otf",
+    //   weight: "500",
+    //   style: "normal",
+    // },
     {
       path: "../public/fonts/Rota-Bold.otf",
       weight: "700",
