@@ -1,3 +1,5 @@
+import { AppSidebar } from "@/components/app-sidebar";
+
 const Page = () => {
   // data fetching
   // hooks
@@ -6,7 +8,11 @@ const Page = () => {
   // return
   return (
     <>
-      <h1 className="mb-6 text-6xl font-bold">App</h1>
+      <main className="grid grid-cols-12 gap-4">
+        <section className="col-span-3 bg-amber-50">
+          <AppSidebar />
+        </section>
+      </main>
     </>
   );
 };
