@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/app-sidebar";
+import LeftSidebar from "@/components/sidebar";
 
 const Page = () => {
   // data fetching
@@ -10,8 +10,9 @@ const Page = () => {
     <>
       <main className="grid grid-cols-12 gap-4">
         <section className="col-span-3 bg-amber-50">
-          <AppSidebar />
+          <LeftSidebar />
         </section>
+        <section className="col-span-9 bg-blue-50"></section>
       </main>
     </>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { ChevronRight, GalleryVerticalEnd } from "lucide-react"; // Added ChevronRight
 import {
@@ -16,7 +18,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarProvider,
+
   // Removed SidebarGroupLabel and SidebarRail as they are not used in the user's provided code
 } from "@/components/ui/sidebar";
 
@@ -24,7 +26,7 @@ import {
 const data = {
   navMain: [
     {
-      title: "Getting Started",
+      title: "HTML",
       url: "#",
       items: [
         {
@@ -38,7 +40,7 @@ const data = {
       ],
     },
     {
-      title: "Building Your Application",
+      title: "CSS",
       url: "#",
       items: [
         {
@@ -93,7 +95,7 @@ const data = {
       ],
     },
     {
-      title: "API Reference",
+      title: "JS",
       url: "#",
       items: [
         {
@@ -123,7 +125,7 @@ const data = {
       ],
     },
     {
-      title: "Architecture",
+      title: "React",
       url: "#",
       items: [
         {
@@ -149,7 +151,7 @@ const data = {
       ],
     },
     {
-      title: "Community",
+      title: "Next JS",
       url: "#",
       items: [
         {
@@ -162,13 +164,16 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  //
+
+  //
   return (
-    <SidebarProvider>
-      <Sidebar className="w-3/12" variant="floating" {...props}>
+    <>
+      <Sidebar variant="floating" {...props}>
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
+              <SidebarMenuButton className="mt-12" size="lg" asChild>
                 <a href="#">
                   <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                     <GalleryVerticalEnd className="size-4" />
@@ -195,7 +200,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem>
                     {/* Use SidebarMenuButton as the CollapsibleTrigger */}
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className="w-full justify-between font-medium">
+                      <SidebarMenuButton className="mb-2 w-full justify-between text-xl font-extrabold">
                         {item.title}
                         {/* Add ChevronRight icon with rotation for visual feedback */}
                         <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
@@ -205,12 +210,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   {/* Wrap the sub-items in CollapsibleContent */}
                   {item.items?.length ? (
                     <CollapsibleContent>
-                      <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
+                      <SidebarMenuSub className="ml-0 gap-2 border-l-0 px-1.5">
                         {item.items.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
                               asChild
                               isActive={subItem.isActive}
+                              className="text-lg"
                             >
                               <a href={subItem.url}>{subItem.title}</a>
                             </SidebarMenuSubButton>
@@ -226,6 +232,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarContent>
         {/* SidebarRail was not present in your provided code, so it's removed */}
       </Sidebar>
-    </SidebarProvider>
+    </>
   );
 }
