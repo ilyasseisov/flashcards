@@ -21,7 +21,7 @@ import {
 
   // Removed SidebarGroupLabel and SidebarRail as they are not used in the user's provided code
 } from "@/components/ui/sidebar";
-import { Separator } from "./ui/separator";
+import { Separator } from "../ui/separator";
 
 // This is sample data.
 const data = {

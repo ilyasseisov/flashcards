@@ -1,4 +1,4 @@
-import LeftSidebar from "@/components/sidebar";
+import LeftSidebar from "@/components/sidebar/sidebar";
 
 const Page = () => {
   // data fetching
