@@ -1,3 +1,4 @@
+import Header from "@/components/header";
 import LeftSidebar from "@/components/sidebar/sidebar";
 
 const Page = () => {
@@ -12,7 +13,9 @@ const Page = () => {
         <section className="col-span-6 bg-amber-50 lg:col-span-5 xl:col-span-4">
           <LeftSidebar />
         </section>
-        <section className="col-span-6 bg-blue-50 lg:col-span-7 xl:col-span-8"></section>
+        <section className="col-span-6 bg-blue-50 lg:col-span-7 xl:col-span-8">
+          <Header />
+        </section>
       </main>
     </>
   );
