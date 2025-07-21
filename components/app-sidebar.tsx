@@ -189,7 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 // Wrap each main item in a Collapsible component
                 <Collapsible
                   key={item.title}
-                  defaultOpen={true} // You can set this to false if you want them closed by default
+                  defaultOpen={false} // You can set this to false if you want them closed by default
                   className="group/collapsible"
                 >
                   <SidebarMenuItem>
