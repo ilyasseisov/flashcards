@@ -46,7 +46,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8">
+    <div className="mx-auto w-full max-w-5xl bg-amber-50 px-4 py-8">
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold text-gray-900">Your Progress</h1>
         <p className="text-gray-600">

@@ -18,11 +18,10 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-
-  // Removed SidebarGroupLabel and SidebarRail as they are not used in the user's provided code
 } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
 import Link from "next/link";
+import ROUTES from "@/constants/routes";
 
 // This is sample data.
 const data = {
@@ -122,10 +121,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem className="mt-16 md:mt-0">
-              <h3 className="ml-2 text-2xl">
-                <span className="font-normal">Dev</span>
-                <span className="text-primary font-extrabold">Cards</span>
-              </h3>
+              <Link href={ROUTES.APP}>
+                <h3 className="ml-2 text-2xl">
+                  <span className="font-normal">Dev</span>
+                  <span className="text-primary font-extrabold">Cards</span>
+                </h3>
+              </Link>
             </SidebarMenuItem>
             <Separator />
           </SidebarMenu>

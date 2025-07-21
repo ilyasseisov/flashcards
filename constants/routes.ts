@@ -1,5 +1,5 @@
 const ROUTES = {
-  // HOME: '/',
+  APP: "/flashcards",
   // BLOG: '/blog',
   // POST: (slug: string) => `/blog/${slug}`,
 };
