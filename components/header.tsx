@@ -1,3 +1,4 @@
+import { LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 
 const Header = () => {
@@ -8,7 +9,12 @@ const Header = () => {
   return (
     <>
       <header className="mt-2 flex justify-end p-4">
-        <Button variant="outline">Log out</Button>
+        <Button variant="outline" size="sm">
+          <span className="relative mr-1 translate-y-[-2px]">
+            <LogOut />
+          </span>
+          Log out
+        </Button>
       </header>
     </>
   );
