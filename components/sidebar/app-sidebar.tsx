@@ -22,6 +22,7 @@ import {
   // Removed SidebarGroupLabel and SidebarRail as they are not used in the user's provided code
 } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
+import Link from "next/link";
 
 // This is sample data.
 const data = {
@@ -31,133 +32,80 @@ const data = {
       url: "#",
       items: [
         {
-          title: "Installation",
-          url: "#",
+          title: "HTML Basics",
+          url: "/flashcards/html/html-basics",
         },
         {
-          title: "Project Structure",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "CSS",
-      url: "#",
-      items: [
-        {
-          title: "Routing",
-          url: "#",
+          title: "HTML Elements & Tags",
+          url: "/flashcards/html/html-elements-&-tags",
         },
         {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
+          title: "HTML Attributes",
+          url: "/flashcards/html/html-attributes",
         },
         {
-          title: "Rendering",
-          url: "#",
+          title: "HTML Document Structure",
+          url: "/flashcards/html/html-document-structure",
         },
         {
-          title: "Caching",
-          url: "#",
+          title: "Text Formatting",
+          url: "/flashcards/html/text-formatting",
         },
         {
-          title: "Styling",
-          url: "#",
+          title: "HTML Forms",
+          url: "/flashcards/html/html-forms",
         },
         {
-          title: "Optimizing",
-          url: "#",
+          title: "HTML Media",
+          url: "/flashcards/html/html-media",
         },
         {
-          title: "Configuring",
-          url: "#",
+          title: "HTML Links",
+          url: "/flashcards/html/html-links",
         },
         {
-          title: "Testing",
-          url: "#",
+          title: "HTML Lists",
+          url: "/flashcards/html/html-lists",
         },
         {
-          title: "Authentication",
-          url: "#",
+          title: "HTML Tables",
+          url: "/flashcards/html/html-tables",
         },
         {
-          title: "Deploying",
-          url: "#",
+          title: "HTML Semantics",
+          url: "/flashcards/html/html-semantics",
         },
         {
-          title: "Upgrading",
-          url: "#",
+          title: "HTML APIs",
+          url: "/flashcards/html/html-apis",
         },
         {
-          title: "Examples",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "JS",
-      url: "#",
-      items: [
-        {
-          title: "Components",
-          url: "#",
+          title: "HTML Graphics (SVG, Canvas)",
+          url: "/flashcards/html/html-graphics-(svg,-canvas)",
         },
         {
-          title: "File Conventions",
-          url: "#",
+          title: "HTML Accessibility",
+          url: "/flashcards/html/html-accessibility",
         },
         {
-          title: "Functions",
-          url: "#",
+          title: "HTML SEO Basics",
+          url: "/flashcards/html/html-seo-basics",
         },
         {
-          title: "next.config.js Options",
-          url: "#",
+          title: "HTML5 Features",
+          url: "/flashcards/html/html5-features",
         },
         {
-          title: "CLI",
-          url: "#",
+          title: "HTML & CSS Integration",
+          url: "/flashcards/html/html-&-css-integration",
         },
         {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "React",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
+          title: "HTML & JavaScript Integration",
+          url: "/flashcards/html/html-&-javascript-integration",
         },
         {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Next JS",
-      url: "#",
-      items: [
-        {
-          title: "Contribution Guide",
-          url: "#",
+          title: "HTML Validation & Best Practices",
+          url: "/flashcards/html/html-validation-&-best-practices",
         },
       ],
     },
@@ -213,7 +161,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                               isActive={subItem.isActive}
                               className="text-lg"
                             >
-                              <a href={subItem.url}>{subItem.title}</a>
+                              <Link href={subItem.url}>{subItem.title}</Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}
