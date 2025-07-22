@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
 import Link from "next/link";
+import { usePathname } from "next/navigation"; // Add this import
 import ROUTES from "@/constants/routes";
 
 // This is sample data.
@@ -112,7 +113,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  //
+  const pathname = usePathname(); // Add this hook
 
   //
   return (
@@ -159,7 +160,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
                               asChild
-                              isActive={subItem.isActive}
+                              isActive={pathname === subItem.url}
                               className="text-lg"
                             >
                               <Link href={subItem.url}>{subItem.title}</Link>
