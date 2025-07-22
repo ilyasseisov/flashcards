@@ -1,3 +1,7 @@
+import { FlashcardQuiz } from "@/components/quiz/flashcard-quiz";
+import { getFlashcardSet } from "@/lib/flashcard-data";
+import { notFound } from "next/navigation";
+
 interface PageProps {
   params: {
     category: string;
@@ -6,19 +10,20 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  const { category, subcategory } = await params;
+  const { category, subcategory } = params;
 
-  // Now you can use category and subcategory to:
-  // - Fetch relevant flashcards
-  // - Display the right content
-  // - Set page titles, etc.
+  const flashcardSet = getFlashcardSet(category, subcategory);
+
+  if (!flashcardSet) {
+    notFound();
+  }
 
   return (
-    <div>
-      <h1>
-        Flashcards for {category} - {subcategory}
+    <main className="container py-8">
+      <h1 className="mb-8 bg-amber-50 text-center text-2xl font-bold">
+        {flashcardSet.title}
       </h1>
-      {/* Your flashcard content here */}
-    </div>
+      <FlashcardQuiz flashcards={flashcardSet.flashcards} />
+    </main>
   );
 }
