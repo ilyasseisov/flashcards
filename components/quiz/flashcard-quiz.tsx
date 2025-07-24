@@ -1,11 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useQuizStore } from "@/store/useQuizStore";
+// components
 import { QuestionCard } from "./question-card";
 import { QuizHeader } from "./quiz-header";
 import { QuizComplete } from "./quiz-complete";
+// types
 import { Flashcard } from "@/types/flashcard";
+// store
+import { useQuizStore } from "@/store/useQuizStore";
 
 interface FlashcardQuizProps {
   flashcards: Flashcard[];

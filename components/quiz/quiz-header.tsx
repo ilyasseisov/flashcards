@@ -1,5 +1,7 @@
 import * as React from "react";
+// store
 import { useQuizStore } from "@/store/useQuizStore";
+// components
 import { QuizPagination } from "./quiz-pagination";
 import { ProgressIndicator } from "./progress-indicator";
 

@@ -10,7 +10,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  const { category, subcategory } = params;
+  const { category, subcategory } = await params;
 
   const flashcardSet = getFlashcardSet(category, subcategory);
 

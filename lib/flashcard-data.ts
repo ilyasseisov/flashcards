@@ -195,7 +195,7 @@ const mockFlashcardSets: FlashcardSet[] = [
   },
   {
     id: "html-apis",
-    title: "HTML APIs Quiz",
+    title: "HTML APIs",
     category: "html",
     subcategory: "apis",
     flashcards: htmlApisFlashcards,

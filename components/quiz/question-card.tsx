@@ -5,9 +5,9 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { useQuizStore } from "@/store/useQuizStore";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useQuizStore } from "@/store/useQuizStore";
 import { AnswerOption } from "./answer-option";
 
 export function QuestionCard() {
