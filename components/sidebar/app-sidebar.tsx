@@ -29,7 +29,7 @@ const data = {
   navMain: [
     {
       title: "HTML",
-      url: "#",
+      url: "/flashcards/html",
       items: [
         {
           title: "HTML Basics",
@@ -146,7 +146,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     {/* Use SidebarMenuButton as the CollapsibleTrigger */}
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton className="mb-2 w-full justify-between text-xl font-extrabold">
-                        {item.title}
+                        <Link href={item.url}>{item.title}</Link>
                         {/* Add ChevronRight icon with rotation for visual feedback */}
                         <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                       </SidebarMenuButton>
