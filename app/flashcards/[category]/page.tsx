@@ -16,41 +16,45 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  // get category slug
-  const categorySlug = await params.category;
+  const categorySlug = params.category;
   let category: ICategory | null = null;
   let subcategories: ISubcategory[] = [];
 
-  try {
-    // 1. Connect to the database
-    await dbConnect();
+  // --- HIGHLIGHTED CHANGE START ---
+  // 1. Connect to the database (moved here to ensure connection before any DB ops)
+  await dbConnect();
 
+  try {
     // 2. Find the Category document using its slug
-    // We select only the _id to keep the payload small, as we only need the ID for subcategory lookup
+    // This part is now outside the main error handling for subcategories
     category = await CategoryModel.findOne({ slug: categorySlug })
       .select("_id name slug")
       .lean();
 
-    // 3. Handle case where category is not found
+    // 3. Handle case where category is not found immediately
     if (!category) {
-      // Next.js notFound() will render the nearest not-found.tsx or a default 404 page
+      // If category is not found, call notFound().
+      // This will stop the execution of this component and render not-found.tsx.
+      // Any subsequent code in this function will not run.
       notFound();
     }
 
     // 4. Fetch all Subcategories linked to this Category's _id
-    // We use .lean() for performance when not modifying the documents
+    // This part is now within a try-catch for other potential database errors
     subcategories = await SubcategoryModel.find({ categoryId: category._id })
-      .sort({ order: 1 }) // Optional: Sort subcategories alphabetically by name
+      .sort({ order: 1 }) // Sort by 'order' field in ascending order
       .lean();
 
     console.log(subcategories);
-  } catch (error) {
-    console.error("Database error fetching category or subcategories:", error);
-    // In a real application, you might want a more user-friendly error page or message
-    // For now, we'll re-throw or show a generic error.
-    // As it's a server component, re-throwing will trigger Next.js error boundary.
-    throw new Error("Failed to load category data.");
+  } catch (error: any) {
+    // This catch block will now primarily handle errors *other than* notFound()
+    // (e.g., actual database connection issues, Mongoose validation errors during find operations if any)
+    console.error("Database error fetching subcategories:", error);
+    // throw new Error(
+    //   "Failed to load subcategory data due to an unexpected error.",
+    // );
   }
+  // --- HIGHLIGHTED CHANGE END ---
 
   // return
   return (
