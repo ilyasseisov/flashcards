@@ -6,6 +6,7 @@ export interface ICategory extends Document {
   name: string;
   description?: string; // Optional as per your requirement
   slug: string;
+  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +31,11 @@ const CategorySchema = new Schema<ICategory>(
       unique: true, // Ensures slugs are unique for URL integrity
       lowercase: true, // Always store slugs in lowercase
       trim: true,
+    },
+    order: {
+      type: Number,
+      required: true,
+      min: 0,
     },
   },
   {
