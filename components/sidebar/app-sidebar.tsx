@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight } from "lucide-react"; // Added ChevronRight
+import { ChevronRight } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,101 +21,48 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Add this import
+import { usePathname } from "next/navigation";
 import ROUTES from "@/constants/routes";
+import { getNavCategoriesAndSubcategories } from "@/lib/actions/navigation"; // Import the server action
 
-// This is sample data.
-const data = {
-  navMain: [
-    {
-      title: "HTML",
-      url: "/flashcards/html",
-      items: [
-        {
-          title: "HTML Basics",
-          url: "/flashcards/html/html-basics",
-        },
-        {
-          title: "HTML Elements & Tags",
-          url: "/flashcards/html/html-elements-&-tags",
-        },
-        {
-          title: "HTML Attributes",
-          url: "/flashcards/html/html-attributes",
-        },
-        {
-          title: "HTML Document Structure",
-          url: "/flashcards/html/html-document-structure",
-        },
-        {
-          title: "Text Formatting",
-          url: "/flashcards/html/text-formatting",
-        },
-        {
-          title: "HTML Forms",
-          url: "/flashcards/html/html-forms",
-        },
-        {
-          title: "HTML Media",
-          url: "/flashcards/html/html-media",
-        },
-        {
-          title: "HTML Links",
-          url: "/flashcards/html/html-links",
-        },
-        {
-          title: "HTML Lists",
-          url: "/flashcards/html/html-lists",
-        },
-        {
-          title: "HTML Tables",
-          url: "/flashcards/html/html-tables",
-        },
-        {
-          title: "HTML Semantics",
-          url: "/flashcards/html/html-semantics",
-        },
-        {
-          title: "HTML APIs",
-          url: "/flashcards/html/html-apis",
-        },
-        {
-          title: "HTML Graphics (SVG, Canvas)",
-          url: "/flashcards/html/html-graphics-(svg,-canvas)",
-        },
-        {
-          title: "HTML Accessibility",
-          url: "/flashcards/html/html-accessibility",
-        },
-        {
-          title: "HTML SEO Basics",
-          url: "/flashcards/html/html-seo-basics",
-        },
-        {
-          title: "HTML5 Features",
-          url: "/flashcards/html/html5-features",
-        },
-        {
-          title: "HTML & CSS Integration",
-          url: "/flashcards/html/html-&-css-integration",
-        },
-        {
-          title: "HTML & JavaScript Integration",
-          url: "/flashcards/html/html-&-javascript-integration",
-        },
-        {
-          title: "HTML Validation & Best Practices",
-          url: "/flashcards/html/html-validation-&-best-practices",
-        },
-      ],
-    },
-  ],
-};
+// Define the structure of the data fetched from the server action
+interface NavSubItem {
+  title: string;
+  slug: string;
+  url: string;
+}
+
+interface NavMainItem {
+  title: string;
+  slug: string;
+  url: string;
+  items: NavSubItem[];
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname(); // Add this hook
+  const pathname = usePathname();
+  const [navData, setNavData] = React.useState<NavMainItem[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  //
+  React.useEffect(() => {
+    const fetchNavData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getNavCategoriesAndSubcategories();
+        setNavData(data);
+      } catch (err: any) {
+        console.error("Failed to fetch navigation data:", err);
+        setError("Failed to load navigation. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNavData();
+  }, []); // Empty dependency array means this runs once on mount
+
   return (
     <>
       <Sidebar variant="floating" {...props}>
@@ -135,47 +82,57 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent>
           <SidebarGroup>
             <SidebarMenu className="gap-2">
-              {data.navMain.map((item) => (
-                // Wrap each main item in a Collapsible component
-                <Collapsible
-                  key={item.title}
-                  defaultOpen={false} // You can set this to false if you want them closed by default
-                  className="group/collapsible"
-                >
-                  <SidebarMenuItem>
-                    {/* Use SidebarMenuButton as the CollapsibleTrigger */}
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className="mb-2 w-full justify-between text-xl font-extrabold">
-                        <Link href={item.url}>{item.title}</Link>
-                        {/* Add ChevronRight icon with rotation for visual feedback */}
-                        <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                  </SidebarMenuItem>
-                  {/* Wrap the sub-items in CollapsibleContent */}
-                  {item.items?.length ? (
-                    <CollapsibleContent>
-                      <SidebarMenuSub className="ml-0 gap-2 border-l-0 px-1.5">
-                        {item.items.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={pathname === subItem.url}
-                              className="text-lg"
-                            >
-                              <Link href={subItem.url}>{subItem.title}</Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  ) : null}
-                </Collapsible>
-              ))}
+              {isLoading ? (
+                <p className="text-center text-gray-500">
+                  Loading navigation...
+                </p>
+              ) : error ? (
+                <p className="text-center text-red-500">{error}</p>
+              ) : navData.length > 0 ? (
+                navData.map((item) => (
+                  <Collapsible
+                    key={item.slug} // Use slug as key
+                    // defaultOpen logic: Open if current pathname starts with category URL
+                    defaultOpen={pathname.startsWith(item.url)}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton className="mb-2 w-full justify-between text-xl font-extrabold">
+                          <Link href={item.url}>{item.title}</Link>
+                          <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                    </SidebarMenuItem>
+                    {item.items?.length ? (
+                      <CollapsibleContent>
+                        <SidebarMenuSub className="ml-0 gap-2 border-l-0 px-1.5">
+                          {item.items.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.slug}>
+                              {" "}
+                              {/* Use slug as key */}
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={pathname === subItem.url}
+                                className="text-lg"
+                              >
+                                <Link href={subItem.url}>{subItem.title}</Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    ) : null}
+                  </Collapsible>
+                ))
+              ) : (
+                <p className="text-center text-gray-500">
+                  No categories found.
+                </p>
+              )}
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
-        {/* SidebarRail was not present in your provided code, so it's removed */}
       </Sidebar>
     </>
   );
