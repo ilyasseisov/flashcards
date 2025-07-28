@@ -20,41 +20,34 @@ export default async function Page({ params }: PageProps) {
   let category: ICategory | null = null;
   let subcategories: ISubcategory[] = [];
 
-  // --- HIGHLIGHTED CHANGE START ---
-  // 1. Connect to the database (moved here to ensure connection before any DB ops)
+  // 1. Connect to the database
   await dbConnect();
 
+  // 2. Find the Category document using its slug
+  // IMPORTANT: Keep this OUTSIDE of try-catch so notFound() can work properly
+  category = await CategoryModel.findOne({ slug: categorySlug })
+    .select("_id name slug")
+    .lean();
+
+  // 3. Handle case where category is not found
+  if (!category) {
+    console.log("Category not found, calling notFound()");
+    notFound(); // This will throw NEXT_HTTP_ERROR_FALLBACK;404 - don't catch it!
+  }
+
+  // 4. Only wrap subcategory fetching in try-catch
   try {
-    // 2. Find the Category document using its slug
-    // This part is now outside the main error handling for subcategories
-    category = await CategoryModel.findOne({ slug: categorySlug })
-      .select("_id name slug")
-      .lean();
-
-    // 3. Handle case where category is not found immediately
-    if (!category) {
-      // If category is not found, call notFound().
-      // This will stop the execution of this component and render not-found.tsx.
-      // Any subsequent code in this function will not run.
-      notFound();
-    }
-
-    // 4. Fetch all Subcategories linked to this Category's _id
-    // This part is now within a try-catch for other potential database errors
     subcategories = await SubcategoryModel.find({ categoryId: category._id })
       .sort({ order: 1 }) // Sort by 'order' field in ascending order
       .lean();
 
     console.log(subcategories);
   } catch (error: any) {
-    // This catch block will now primarily handle errors *other than* notFound()
-    // (e.g., actual database connection issues, Mongoose validation errors during find operations if any)
+    // This catch block will only handle actual database errors for subcategories
     console.error("Database error fetching subcategories:", error);
-    // throw new Error(
-    //   "Failed to load subcategory data due to an unexpected error.",
-    // );
+    // You can handle subcategory fetch errors here if needed
+    // For example, you might want to show an empty list or a different error message
   }
-  // --- HIGHLIGHTED CHANGE END ---
 
   // return
   return (

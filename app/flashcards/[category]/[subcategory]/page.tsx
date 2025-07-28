@@ -27,46 +27,51 @@ export default async function SubcategoryPage({ params }: PageProps) {
   let subcategory: ISubcategory | null = null;
   let flashcards: IFlashcard[] = [];
 
+  // 1. Connect to the database
+  await dbConnect();
+
+  // 2. Find the Category document using its slug
+  // IMPORTANT: Keep this OUTSIDE of try-catch so notFound() can work properly
+  category = await CategoryModel.findOne({ slug: categorySlug })
+    .select("_id name slug")
+    .lean();
+
+  // If category not found, return 404
+  if (!category) {
+    console.log("Category not found, calling notFound()");
+    notFound();
+  }
+
+  // 3. Find the Subcategory document using its slug AND the found categoryId
+  // IMPORTANT: Keep this OUTSIDE of try-catch so notFound() can work properly
+  subcategory = await SubcategoryModel.findOne({
+    slug: subcategorySlug,
+    categoryId: category._id, // Crucial for correct lookup
+  })
+    .select("_id name slug categoryId")
+    .lean();
+
+  // If subcategory not found, return 404
+  if (!subcategory) {
+    console.log("Subcategory not found, calling notFound()");
+    notFound();
+  }
+
+  // 4. Only wrap flashcard fetching in try-catch
   try {
-    // 1. Connect to the database
-    await dbConnect();
-
-    // 2. Find the Category document using its slug
-    category = await CategoryModel.findOne({ slug: categorySlug })
-      .select("_id name slug")
-      .lean();
-
-    // If category not found, return 404
-    if (!category) {
-      notFound();
-    }
-
-    // 3. Find the Subcategory document using its slug AND the found categoryId
-    // This ensures we get the correct subcategory if slugs might be duplicated across categories
-    subcategory = await SubcategoryModel.findOne({
-      slug: subcategorySlug,
-      categoryId: category._id, // Crucial for correct lookup
-    })
-      .select("_id name slug categoryId")
-      .lean();
-
-    // If subcategory not found, return 404
-    if (!subcategory) {
-      notFound();
-    }
-
-    // 4. Fetch all Flashcards linked to this Subcategory's _id
-    // You might want to add sorting here if you have an 'order' field on Flashcards
+    // Fetch all Flashcards linked to this Subcategory's _id
     flashcards = await FlashcardModel.find({ subcategoryId: subcategory._id })
-      .sort({ order: 1 }) // Uncomment and use if you add an 'order' field to Flashcard schema
+      .sort({ order: 1 }) // Sort by 'order' field if available
       .lean();
 
     console.log(
       `Fetched ${flashcards.length} flashcards for subcategory "${subcategory.name}"`,
     );
   } catch (error) {
-    console.error("Database error fetching subcategory or flashcards:", error);
-    throw new Error("Failed to load subcategory data.");
+    // This catch block will only handle actual database errors for flashcards
+    console.error("Database error fetching flashcards:", error);
+    // You can handle flashcard fetch errors here if needed
+    // For example, you might want to show an empty list or a different error message
   }
 
   return (
