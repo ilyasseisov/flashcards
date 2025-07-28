@@ -7,6 +7,7 @@ export interface IFlashcard extends Document {
   correctAnswerIndex: number; // Index of the correct answer in the options array
   explanation: string;
   subcategoryId: Types.ObjectId; // Reference to the parent Subcategory's _id
+  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +52,11 @@ const FlashcardSchema = new Schema<IFlashcard>(
       type: Schema.Types.ObjectId,
       ref: "Subcategory", // References the Subcategory model
       required: true,
+    },
+    order: {
+      type: Number,
+      required: true,
+      min: 0,
     },
   },
   {
