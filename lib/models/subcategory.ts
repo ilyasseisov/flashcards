@@ -5,6 +5,7 @@ export interface ISubcategory extends Document {
   name: string;
   slug: string;
   categoryId: Types.ObjectId; // Reference to the parent Category's _id
+  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,11 @@ const SubcategorySchema = new Schema<ISubcategory>(
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,
+    },
+    order: {
+      type: Number,
+      required: true,
+      min: 0,
     },
   },
   {
