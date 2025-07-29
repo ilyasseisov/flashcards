@@ -43,3 +43,5 @@ next-env.d.ts
 # mine
 zz
 lib/temp_funcs
+# clerk configuration (can include secrets)
+/.clerk/

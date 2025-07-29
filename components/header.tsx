@@ -1,5 +1,6 @@
 import { LogOut } from "lucide-react";
 import { Button } from "./ui/button";
+import { SignedIn, SignOutButton } from "@clerk/nextjs";
 
 const Header = () => {
   // hooks
@@ -8,13 +9,21 @@ const Header = () => {
   // return
   return (
     <>
-      <header className="mt-2 flex justify-end p-4">
-        <Button variant="outline" size="sm">
-          <span className="relative mr-1 translate-y-[-2px]">
-            <LogOut />
-          </span>
-          Log out
-        </Button>
+      <header className="flex h-16 items-center justify-end gap-4 p-4">
+        <SignedIn>
+          <SignOutButton>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="hover:cursor-pointer"
+            >
+              Sign Out
+              <span className="relative mr-1 translate-y-[-2px]">
+                <LogOut />
+              </span>
+            </Button>
+          </SignOutButton>
+        </SignedIn>
       </header>
     </>
   );

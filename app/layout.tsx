@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
+import { ClerkProvider } from "@clerk/nextjs";
 
 // font declaration
 export const rota = localFont({
@@ -35,8 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className={rota.variable} lang="en">
-      <body className="font-rota antialiased">{children}</body>
-    </html>
+    <ClerkProvider>
+      <html className={rota.variable} lang="en">
+        <body className="font-rota antialiased">{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }
