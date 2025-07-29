@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+// ui
 import { ChevronRight } from "lucide-react";
 import {
   Collapsible,
@@ -20,9 +21,12 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
+// next
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+// constants
 import ROUTES from "@/constants/routes";
+// data fetching
 import { getNavCategoriesAndSubcategories } from "@/lib/actions/navigation"; // Import the server action
 
 // Define the structure of the data fetched from the server action
