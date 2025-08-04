@@ -24,33 +24,35 @@ const QuizClient = ({
     null,
   );
 
-  // --- 1. Connect to the Zustand Store (FIXED) ---
-  // Select state and actions separately to avoid infinite renders.
-  const { flashcards, currentFlashcardIndex, quizStatus } = useQuizStore(
-    (state) => ({
-      flashcards: state.flashcards,
-      currentFlashcardIndex: state.currentFlashcardIndex,
-      quizStatus: state.quizStatus,
-    }),
-  );
+  // Add hydration state to prevent SSR mismatch
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // We select the actions in a separate, stable call.
+  // --- 1. Connect to the Zustand Store (FIXED) ---
+  // Use a more stable selector pattern
+  const flashcards = useQuizStore((state) => state.flashcards);
+  const currentFlashcardIndex = useQuizStore(
+    (state) => state.currentFlashcardIndex,
+  );
+  const quizStatus = useQuizStore((state) => state.quizStatus);
+
+  // Get actions separately
   const initializeQuiz = useQuizStore((state) => state.initializeQuiz);
   const nextFlashcard = useQuizStore((state) => state.nextFlashcard);
   const setFlashcardProgress = useQuizStore(
     (state) => state.setFlashcardProgress,
   );
 
-  // --- 2. Hydrate the Store on Initial Load ---
-  // The `useEffect` hook ensures this only runs once when the component first mounts.
+  // --- 2. Handle hydration and initialization ---
   useEffect(() => {
-    // If the flashcards array is empty, we haven't initialized yet.
-    if (flashcards.length === 0 && initialFlashcards.length > 0) {
-      console.log("Hydrating Zustand store with initial data.");
-      // Pass the data to the store's initialize action.
+    // Mark as hydrated first
+    setIsHydrated(true);
+
+    // Initialize the quiz only once with the server data
+    if (initialFlashcards.length > 0) {
+      console.log("Initializing Zustand store with server data.");
       initializeQuiz(initialFlashcards, initialProgress);
     }
-  }, [flashcards.length, initialFlashcards, initialProgress, initializeQuiz]);
+  }, []); // Empty dependency array - run only once
 
   // Handle the click event for an option
   const handleAnswerClick = (optionIndex: number) => {
@@ -73,19 +75,19 @@ const QuizClient = ({
       currentFlashcard._id,
       isCorrect ? "correct" : "incorrect",
     );
+  };
 
-    // After a delay, move to the next card.
-    setTimeout(() => {
-      setShowAnswer(false);
-      setSelectedOptionIndex(null);
-      nextFlashcard();
-    }, 2000); // 2-second delay to let the user see the result.
+  // Handle next question button click
+  const handleNextQuestion = () => {
+    setShowAnswer(false);
+    setSelectedOptionIndex(null);
+    nextFlashcard();
   };
 
   // --- 3. Render Logic based on Quiz Status ---
 
-  // Loading state
-  if (quizStatus === "loading") {
+  // Show loading until hydrated and quiz is initialized
+  if (!isHydrated || quizStatus === "loading" || flashcards.length === 0) {
     return (
       <div className="p-8 text-center text-lg text-gray-500">
         Loading flashcards...
@@ -151,6 +153,17 @@ const QuizClient = ({
           <div className="mt-6 rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
             <h3 className="font-bold text-blue-800">Explanation:</h3>
             <p className="text-gray-700">{currentFlashcard.explanation}</p>
+          </div>
+        )}
+
+        {showAnswer && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={handleNextQuestion}
+              className="rounded-full bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg transition-colors hover:bg-indigo-700"
+            >
+              Next Question
+            </button>
           </div>
         )}
       </div>
