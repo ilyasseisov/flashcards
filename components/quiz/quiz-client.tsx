@@ -42,11 +42,34 @@ const QuizClient = ({
     (state) => state.setFlashcardProgress,
   );
   const clearStore = useQuizStore((state) => state.clearStore);
+  const resetQuiz = useQuizStore((state) => state.resetQuiz);
 
   // Helper function to get question status based on progress
   const getQuestionStatus = (flashcardId: string) => {
     const progressRecord = progress.find((p) => p.flashcardId === flashcardId);
     return progressRecord?.status || null;
+  };
+
+  // Calculate quiz statistics
+  const getQuizStats = () => {
+    const totalQuestions = flashcards.length;
+    const correctAnswers = progress.filter(
+      (p) => p.status === "correct",
+    ).length;
+    const incorrectAnswers = progress.filter(
+      (p) => p.status === "incorrect",
+    ).length;
+    const percentage =
+      totalQuestions > 0
+        ? Math.round((correctAnswers / totalQuestions) * 100)
+        : 0;
+
+    return {
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      percentage,
+    };
   };
 
   // Navigate to specific question
@@ -57,6 +80,13 @@ const QuizClient = ({
 
     // Update the current flashcard index in store
     goToFlashcard(questionIndex);
+  };
+
+  // Handle try again button click
+  const handleTryAgain = () => {
+    resetQuiz();
+    setShowAnswer(false);
+    setSelectedOptionIndex(null);
   };
 
   // --- 2. Handle hydration and initialization ---
@@ -113,20 +143,53 @@ const QuizClient = ({
     );
   }
 
-  // Quiz completed state
+  // Quiz completed state with statistics
   if (quizStatus === "completed") {
+    const stats = getQuizStats();
+
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
-        <div className="w-full max-w-lg rounded-lg bg-white p-8 text-center shadow-xl">
-          <h2 className="mb-4 text-3xl font-bold text-green-600">
-            Quiz Completed!
+        <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl">
+          <h2 className="mb-6 text-3xl font-bold text-gray-800">
+            Quiz Complete!
           </h2>
-          <p className="mb-6 text-gray-700">
-            You&apos;ve reviewed all the flashcards in this set.
-          </p>
+
+          <div className="mb-6 text-lg text-gray-600">
+            You scored {stats.percentage}% ({stats.correctAnswers} out of{" "}
+            {stats.totalQuestions})
+          </div>
+
+          <div className="mb-8 space-y-3 text-left">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700">Total Questions:</span>
+              <span className="font-semibold">{stats.totalQuestions}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700">Correct Answers:</span>
+              <span className="font-semibold text-green-600">
+                {stats.correctAnswers}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700">Incorrect Answers:</span>
+              <span className="font-semibold text-red-600">
+                {stats.incorrectAnswers}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleTryAgain}
+            className="mb-4 w-full rounded-lg bg-green-500 py-3 font-bold text-white shadow-lg transition-colors hover:bg-green-600"
+          >
+            🔄 Try Again
+          </button>
+
           <Link
             href="/flashcards"
-            className="rounded-full bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg transition-colors hover:bg-indigo-700"
+            className="block w-full rounded-lg bg-blue-600 py-3 font-bold text-white shadow-lg transition-colors hover:bg-blue-700"
           >
             Return to Flashcards
           </Link>
