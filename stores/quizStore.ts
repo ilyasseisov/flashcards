@@ -37,6 +37,7 @@ interface QuizActions {
     progress: FlashcardProgress[],
   ) => void;
   nextFlashcard: () => void;
+  goToFlashcard: (index: number) => void;
   setFlashcardProgress: (
     flashcardId: string,
     status: "correct" | "incorrect",
@@ -95,6 +96,16 @@ export const useQuizStore = create<QuizStore>()(
         set({ currentFlashcardIndex: nextIndex });
       } else {
         set({ quizStatus: "completed" });
+      }
+    },
+
+    goToFlashcard: (index) => {
+      const { flashcards } = get();
+      if (index >= 0 && index < flashcards.length) {
+        set({
+          currentFlashcardIndex: index,
+          quizStatus: "playing", // Ensure we're in playing state
+        });
       }
     },
 

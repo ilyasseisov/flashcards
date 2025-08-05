@@ -26,21 +26,38 @@ const QuizClient = ({
   // Add hydration state to prevent SSR mismatch
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // --- 1. Connect to the Zustand Store (FIXED) ---
-  // Use a more stable selector pattern
+  // Get state and actions from store
   const flashcards = useQuizStore((state) => state.flashcards);
   const currentFlashcardIndex = useQuizStore(
     (state) => state.currentFlashcardIndex,
   );
   const quizStatus = useQuizStore((state) => state.quizStatus);
+  const progress = useQuizStore((state) => state.progress);
 
   // Get actions separately
   const initializeQuiz = useQuizStore((state) => state.initializeQuiz);
   const nextFlashcard = useQuizStore((state) => state.nextFlashcard);
+  const goToFlashcard = useQuizStore((state) => state.goToFlashcard);
   const setFlashcardProgress = useQuizStore(
     (state) => state.setFlashcardProgress,
   );
   const clearStore = useQuizStore((state) => state.clearStore);
+
+  // Helper function to get question status based on progress
+  const getQuestionStatus = (flashcardId: string) => {
+    const progressRecord = progress.find((p) => p.flashcardId === flashcardId);
+    return progressRecord?.status || null;
+  };
+
+  // Navigate to specific question
+  const goToQuestion = (questionIndex: number) => {
+    // Reset current question state when navigating
+    setShowAnswer(false);
+    setSelectedOptionIndex(null);
+
+    // Update the current flashcard index in store
+    goToFlashcard(questionIndex);
+  };
 
   // --- 2. Handle hydration and initialization ---
   useEffect(() => {
@@ -131,6 +148,32 @@ const QuizClient = ({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4 font-sans">
       <div className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-xl">
+        {/* Question Navigation */}
+        <div className="mb-8">
+          <div className="flex flex-wrap justify-center gap-2">
+            {flashcards.map((flashcard, index) => {
+              const status = getQuestionStatus(flashcard._id);
+              const isActive = index === currentFlashcardIndex;
+
+              return (
+                <button
+                  key={flashcard._id}
+                  onClick={() => goToQuestion(index)}
+                  className={`h-8 w-8 rounded-full text-sm font-bold transition-all duration-200 ${isActive ? "ring-2 ring-blue-500 ring-offset-2" : ""} ${
+                    status === "correct"
+                      ? "bg-green-500 text-white hover:bg-green-600"
+                      : status === "incorrect"
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                  } `}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <h2 className="mb-6 text-xl font-bold text-gray-800">
           Question {currentFlashcardIndex + 1} of {flashcards.length}
         </h2>
