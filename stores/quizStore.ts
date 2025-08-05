@@ -132,9 +132,13 @@ export const useQuizStore = create<QuizStore>()(
     },
 
     resetQuiz: () => {
+      console.log(
+        "Resetting quiz - clearing all progress and going to first question",
+      );
       set({
         currentFlashcardIndex: 0,
         quizStatus: "playing",
+        progress: [], // This is the key - completely clear all progress
       });
     },
 

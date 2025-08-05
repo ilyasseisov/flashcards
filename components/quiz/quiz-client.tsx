@@ -93,9 +93,15 @@ const QuizClient = ({
 
   // Handle try again button click
   const handleTryAgain = () => {
-    resetQuiz();
+    // Clear all local state first
     setShowAnswer(false);
     setSelectedOptionIndex(null);
+
+    // Reset the quiz in the store (this clears progress and goes to first question)
+    resetQuiz();
+
+    // Force a re-render to ensure all navigation circles are cleared
+    // This ensures the getQuestionStatus function returns null for all questions
   };
 
   // Handle go to subcategory button click
