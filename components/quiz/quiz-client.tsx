@@ -1,4 +1,3 @@
-// components/quiz/quiz-client.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -41,18 +40,20 @@ const QuizClient = ({
   const setFlashcardProgress = useQuizStore(
     (state) => state.setFlashcardProgress,
   );
+  const clearStore = useQuizStore((state) => state.clearStore);
 
   // --- 2. Handle hydration and initialization ---
   useEffect(() => {
     // Mark as hydrated first
     setIsHydrated(true);
 
-    // Initialize the quiz only once with the server data
+    // Clear store and initialize with new data every time
     if (initialFlashcards.length > 0) {
       console.log("Initializing Zustand store with server data.");
+      clearStore(); // Clear old data first
       initializeQuiz(initialFlashcards, initialProgress);
     }
-  }, []); // Empty dependency array - run only once
+  }, [initialFlashcards, initialProgress, initializeQuiz, clearStore]); // Include dependencies to reinitialize on route change
 
   // Handle the click event for an option
   const handleAnswerClick = (optionIndex: number) => {

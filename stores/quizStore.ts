@@ -28,6 +28,7 @@ interface QuizState {
   currentFlashcardIndex: number;
   quizStatus: "loading" | "playing" | "completed";
   isInitialized: boolean; // Add this to track initialization state
+  currentSubcategoryId: string | null; // Track which subcategory is loaded
 }
 
 interface QuizActions {
@@ -41,6 +42,7 @@ interface QuizActions {
     status: "correct" | "incorrect",
   ) => void;
   resetQuiz: () => void;
+  clearStore: () => void;
 }
 
 type QuizStore = QuizState & QuizActions;
@@ -54,16 +56,24 @@ export const useQuizStore = create<QuizStore>()(
     currentFlashcardIndex: 0,
     quizStatus: "loading",
     isInitialized: false,
+    currentSubcategoryId: null,
 
     // --- Actions ---
     initializeQuiz: (initialFlashcards, initialProgress) => {
-      const { isInitialized } = get();
+      const { currentSubcategoryId } = get();
 
-      // Only initialize once
-      if (!isInitialized) {
-        console.log("Initializing quiz store with data:", {
+      // Get the subcategory ID from the first flashcard
+      const newSubcategoryId =
+        initialFlashcards.length > 0
+          ? initialFlashcards[0].subcategoryId
+          : null;
+
+      // Always reinitialize if it's a different subcategory or first time
+      if (currentSubcategoryId !== newSubcategoryId) {
+        console.log("Initializing quiz store with new subcategory data:", {
           flashcardsCount: initialFlashcards.length,
           progressCount: initialProgress.length,
+          subcategoryId: newSubcategoryId,
         });
 
         set({
@@ -72,6 +82,7 @@ export const useQuizStore = create<QuizStore>()(
           currentFlashcardIndex: 0,
           quizStatus: initialFlashcards.length > 0 ? "playing" : "completed",
           isInitialized: true,
+          currentSubcategoryId: newSubcategoryId,
         });
       }
     },
@@ -113,6 +124,17 @@ export const useQuizStore = create<QuizStore>()(
       set({
         currentFlashcardIndex: 0,
         quizStatus: "playing",
+      });
+    },
+
+    clearStore: () => {
+      set({
+        flashcards: [],
+        progress: [],
+        currentFlashcardIndex: 0,
+        quizStatus: "loading",
+        isInitialized: false,
+        currentSubcategoryId: null,
       });
     },
   })),
