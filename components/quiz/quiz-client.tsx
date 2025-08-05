@@ -1,21 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuizStore } from "@/stores/quizStore"; // Import our Zustand store
 import { IFlashcardProgress } from "@/lib/models/flashcard-progress"; // Import the type
 import { IFlashcard } from "@/lib/models/flashcard"; // Import the type
+import { saveQuizProgress } from "@/lib/actions/save-quiz-progress"; // Import our server action
 import Link from "next/link";
 
 // Define the props this component will receive from the Server Component
 interface QuizClientProps {
   initialFlashcards: IFlashcard[];
   initialProgress: IFlashcardProgress[];
+  categorySlug?: string; // Add category slug for navigation
+  subcategorySlug?: string; // Add subcategory slug for navigation
 }
 
 // Our main interactive component
 const QuizClient = ({
   initialFlashcards,
   initialProgress,
+  categorySlug,
+  subcategorySlug,
 }: QuizClientProps) => {
   // Use local state to manage the UI for the current flashcard, like showing the answer.
   const [showAnswer, setShowAnswer] = useState(false);
@@ -25,6 +31,9 @@ const QuizClient = ({
 
   // Add hydration state to prevent SSR mismatch
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isSavingProgress, setIsSavingProgress] = useState(false);
+
+  const router = useRouter();
 
   // Get state and actions from store
   const flashcards = useQuizStore((state) => state.flashcards);
@@ -87,6 +96,36 @@ const QuizClient = ({
     resetQuiz();
     setShowAnswer(false);
     setSelectedOptionIndex(null);
+  };
+
+  // Handle go to subcategory button click
+  const handleGoToSubcategory = async () => {
+    if (!categorySlug) {
+      console.error("Category slug not provided");
+      return;
+    }
+
+    setIsSavingProgress(true);
+
+    try {
+      // Prepare progress data for saving
+      const progressData = progress.map((p) => ({
+        flashcardId: p.flashcardId,
+        status: p.status,
+      }));
+
+      // Save progress to database
+      await saveQuizProgress(progressData);
+
+      // Navigate to category page (subcategory listing)
+      router.push(`/flashcards/${categorySlug}`);
+    } catch (error) {
+      console.error("Error saving progress:", error);
+      // Still navigate even if save fails
+      router.push(`/flashcards/${categorySlug}`);
+    } finally {
+      setIsSavingProgress(false);
+    }
   };
 
   // --- 2. Handle hydration and initialization ---
@@ -182,17 +221,21 @@ const QuizClient = ({
 
           <button
             onClick={handleTryAgain}
-            className="mb-4 w-full rounded-lg bg-green-500 py-3 font-bold text-white shadow-lg transition-colors hover:bg-green-600"
+            disabled={isSavingProgress}
+            className="mb-4 w-full rounded-lg bg-green-500 py-3 font-bold text-white shadow-lg transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             🔄 Try Again
           </button>
 
-          <Link
-            href="/flashcards"
-            className="block w-full rounded-lg bg-blue-600 py-3 font-bold text-white shadow-lg transition-colors hover:bg-blue-700"
+          <button
+            onClick={handleGoToSubcategory}
+            disabled={isSavingProgress}
+            className="block w-full rounded-lg bg-blue-600 py-3 font-bold text-white shadow-lg transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Return to Flashcards
-          </Link>
+            {isSavingProgress
+              ? "Saving Progress..."
+              : `Go to ${categorySlug?.toUpperCase() || "Subcategory"}`}
+          </button>
         </div>
       </div>
     );

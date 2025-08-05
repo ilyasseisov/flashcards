@@ -1,3 +1,4 @@
+// app/flashcards/[category]/[subcategory]/page.tsx
 // Mongoose Schemas & DB connection
 import dbConnect from "@/lib/db";
 import CategoryModel, { ICategory } from "@/lib/models/category";
@@ -123,6 +124,8 @@ export default async function SubcategoryPage({ params }: QuizPageProps) {
     <QuizClient
       initialFlashcards={JSON.parse(JSON.stringify(flashcards))}
       initialProgress={JSON.parse(JSON.stringify(progress))}
+      categorySlug={categorySlug}
+      subcategorySlug={subcategorySlug}
     />
   );
 }
