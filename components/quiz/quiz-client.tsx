@@ -32,6 +32,7 @@ const QuizClient = ({
   // Add hydration state to prevent SSR mismatch
   const [isHydrated, setIsHydrated] = useState(false);
   const [isSavingProgress, setIsSavingProgress] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
 
   const router = useRouter();
 
@@ -269,7 +270,7 @@ const QuizClient = ({
   }
 
   // Quiz completed state with statistics
-  if (quizStatus === "completed") {
+  if (quizStatus === "completed" && !reviewMode) {
     const stats = getQuizStats();
 
     return (
@@ -316,11 +317,92 @@ const QuizClient = ({
           <button
             onClick={handleGoToSubcategory}
             disabled={isSavingProgress}
-            className="block w-full rounded-lg bg-blue-600 py-3 font-bold text-white shadow-lg transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mb-4 w-full rounded-lg bg-blue-600 py-3 font-bold text-white shadow-lg transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSavingProgress
               ? "Saving Progress..."
               : `Go to ${categorySlug?.toUpperCase() || "Subcategory"}`}
+          </button>
+
+          <button
+            onClick={() => setReviewMode(true)}
+            className="w-full rounded-lg bg-gray-800 py-3 font-bold text-white shadow-lg transition-colors hover:bg-gray-900"
+          >
+            📊 See Stats
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Review mode: show all questions in answered state, not interactive
+  if (quizStatus === "completed" && reviewMode) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4 font-sans">
+        <div className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-xl">
+          <h2 className="mb-6 text-center text-3xl font-bold text-gray-800">
+            Quiz Review
+          </h2>
+          {flashcards.map((flashcard, idx) => {
+            const progressRecord = progress.find(
+              (p) => p.flashcardId === flashcard._id,
+            );
+            const userSelected = progressRecord?.selectedOptionIndex;
+            const status = progressRecord?.status;
+            return (
+              <div
+                key={flashcard._id}
+                className="mb-8 border-b pb-6 last:border-b-0 last:pb-0"
+              >
+                <h3 className="mb-2 text-lg font-semibold text-gray-700">
+                  Question {idx + 1}: {flashcard.question}
+                </h3>
+                <ul className="space-y-2">
+                  {flashcard.options.map((option, optionIdx) => {
+                    let optionClasses = "rounded-lg border-2 p-3 ";
+                    if (optionIdx === flashcard.correctAnswerIndex) {
+                      optionClasses +=
+                        "border-green-500 bg-green-100 font-bold ";
+                    } else if (
+                      optionIdx === userSelected &&
+                      userSelected !== flashcard.correctAnswerIndex
+                    ) {
+                      optionClasses +=
+                        "border-red-500 bg-red-100 text-gray-500 line-through ";
+                    } else {
+                      optionClasses +=
+                        "border-gray-200 bg-gray-50 text-gray-600 ";
+                    }
+                    return (
+                      <li key={optionIdx} className={optionClasses}>
+                        {option}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="mt-3">
+                  <span className="text-sm text-gray-500">
+                    {status === "correct"
+                      ? "✅ Correct"
+                      : status === "incorrect"
+                        ? "❌ Incorrect"
+                        : "Not answered"}
+                  </span>
+                </div>
+                <div className="mt-2 rounded-lg border-2 border-blue-200 bg-blue-50 p-3">
+                  <span className="font-bold text-blue-800">Explanation:</span>
+                  <span className="ml-2 text-gray-700">
+                    {flashcard.explanation}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+          <button
+            onClick={() => setReviewMode(false)}
+            className="mt-4 w-full rounded-lg bg-gray-600 py-3 font-bold text-white shadow-lg transition-colors hover:bg-gray-700"
+          >
+            ← Back to Results
           </button>
         </div>
       </div>
