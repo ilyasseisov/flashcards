@@ -71,6 +71,17 @@ export const useQuizStore = create<QuizStore>()(
           ? initialFlashcards[0].subcategoryId
           : null;
 
+      // Helper: check if all flashcards are answered
+      const allAnswered =
+        initialFlashcards.length > 0 &&
+        initialFlashcards.every((fc) =>
+          initialProgress.some(
+            (p) =>
+              p.flashcardId?.toString?.() === fc._id?.toString?.() &&
+              (p.status === "correct" || p.status === "incorrect"),
+          ),
+        );
+
       // Always reinitialize if it's a different subcategory or first time
       if (currentSubcategoryId !== newSubcategoryId) {
         console.log("Initializing quiz store with new subcategory data:", {
@@ -83,7 +94,12 @@ export const useQuizStore = create<QuizStore>()(
           flashcards: initialFlashcards,
           progress: initialProgress,
           currentFlashcardIndex: 0,
-          quizStatus: initialFlashcards.length > 0 ? "playing" : "completed",
+          quizStatus:
+            initialFlashcards.length === 0
+              ? "completed"
+              : allAnswered
+                ? "completed"
+                : "playing",
           isInitialized: true,
           currentSubcategoryId: newSubcategoryId,
         });
