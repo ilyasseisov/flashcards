@@ -18,6 +18,7 @@ interface FlashcardProgress {
   flashcardId: string;
   clerkId: string;
   status: "correct" | "incorrect";
+  selectedOptionIndex?: number; // Add this to track which option user selected
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +42,7 @@ interface QuizActions {
   setFlashcardProgress: (
     flashcardId: string,
     status: "correct" | "incorrect",
+    selectedOptionIndex?: number, // Add optional parameter for selected option
   ) => void;
   resetQuiz: () => void;
   clearStore: () => void;
@@ -109,7 +111,7 @@ export const useQuizStore = create<QuizStore>()(
       }
     },
 
-    setFlashcardProgress: (flashcardId, status) => {
+    setFlashcardProgress: (flashcardId, status, selectedOptionIndex) => {
       set(
         produce((state: QuizState) => {
           const progressRecord = state.progress.find(
@@ -118,11 +120,15 @@ export const useQuizStore = create<QuizStore>()(
           if (progressRecord) {
             progressRecord.status = status;
             progressRecord.updatedAt = new Date();
+            if (selectedOptionIndex !== undefined) {
+              progressRecord.selectedOptionIndex = selectedOptionIndex;
+            }
           } else {
             state.progress.push({
               flashcardId,
               clerkId: "",
               status,
+              selectedOptionIndex,
               createdAt: new Date(),
               updatedAt: new Date(),
             });

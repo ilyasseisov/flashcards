@@ -59,6 +59,46 @@ const QuizClient = ({
     return progressRecord?.status || null;
   };
 
+  // Helper function to check if current question has been answered
+  const isCurrentQuestionAnswered = () => {
+    const currentFlashcard = flashcards[currentFlashcardIndex];
+    if (!currentFlashcard) return false;
+    return getQuestionStatus(currentFlashcard._id) !== null;
+  };
+
+  // Helper function to get the user's selected answer for a question
+  const getUserSelectedAnswer = (flashcardId: string) => {
+    const progressRecord = progress.find((p) => p.flashcardId === flashcardId);
+    console.log("getUserSelectedAnswer called:", {
+      flashcardId,
+      progressRecord,
+    });
+
+    if (!progressRecord) return null;
+
+    // If we have the selectedOptionIndex stored, return it
+    if (
+      "selectedOptionIndex" in progressRecord &&
+      progressRecord.selectedOptionIndex !== undefined
+    ) {
+      console.log(
+        "Found stored selectedOptionIndex:",
+        progressRecord.selectedOptionIndex,
+      );
+      return progressRecord.selectedOptionIndex;
+    }
+
+    // Fallback: if correct, they must have selected the correct answer
+    const flashcard = flashcards.find((f) => f._id === flashcardId);
+    if (progressRecord.status === "correct" && flashcard) {
+      console.log("Correct answer fallback:", flashcard.correctAnswerIndex);
+      return flashcard.correctAnswerIndex;
+    }
+
+    console.log("No selected option found, returning null");
+    return null; // For old incorrect answers without stored selection
+  };
+
   // Calculate quiz statistics
   const getQuizStats = () => {
     const totalQuestions = flashcards.length;
@@ -83,12 +123,25 @@ const QuizClient = ({
 
   // Navigate to specific question
   const goToQuestion = (questionIndex: number) => {
-    // Reset current question state when navigating
-    setShowAnswer(false);
-    setSelectedOptionIndex(null);
-
     // Update the current flashcard index in store
     goToFlashcard(questionIndex);
+
+    // Check if the new question has been answered
+    const targetFlashcard = flashcards[questionIndex];
+    if (targetFlashcard) {
+      const isAnswered = getQuestionStatus(targetFlashcard._id) !== null;
+      setShowAnswer(isAnswered); // Show answer if already answered
+
+      if (isAnswered) {
+        const userAnswer = getUserSelectedAnswer(targetFlashcard._id);
+        setSelectedOptionIndex(userAnswer);
+      } else {
+        setSelectedOptionIndex(null);
+      }
+    } else {
+      setShowAnswer(false);
+      setSelectedOptionIndex(null);
+    }
   };
 
   // Handle try again button click
@@ -147,6 +200,32 @@ const QuizClient = ({
     }
   }, [initialFlashcards, initialProgress, initializeQuiz, clearStore]); // Include dependencies to reinitialize on route change
 
+  // Update local state when current flashcard changes
+  useEffect(() => {
+    if (flashcards.length > 0) {
+      const currentFlashcard = flashcards[currentFlashcardIndex];
+      if (currentFlashcard) {
+        const isAnswered = getQuestionStatus(currentFlashcard._id) !== null;
+        setShowAnswer(isAnswered);
+
+        if (isAnswered) {
+          const userAnswer = getUserSelectedAnswer(currentFlashcard._id);
+          setSelectedOptionIndex(userAnswer);
+          console.log("Setting selected option for useEffect:", {
+            questionId: currentFlashcard._id,
+            userAnswer,
+            currentIndex: currentFlashcardIndex,
+            progressData: progress.find(
+              (p) => p.flashcardId === currentFlashcard._id,
+            ),
+          });
+        } else {
+          setSelectedOptionIndex(null);
+        }
+      }
+    }
+  }, [currentFlashcardIndex, flashcards, progress]);
+
   // Handle the click event for an option
   const handleAnswerClick = (optionIndex: number) => {
     // If the answer is already shown, do nothing.
@@ -162,11 +241,11 @@ const QuizClient = ({
     const isCorrect = optionIndex === currentFlashcard.correctAnswerIndex;
     setShowAnswer(true); // Show the answer feedback.
 
-    // Update the progress in our Zustand store.
-    // In a later step, we'll also trigger a Server Action here to save this to the DB.
+    // Update the progress in our Zustand store with the selected option index
     setFlashcardProgress(
       currentFlashcard._id,
       isCorrect ? "correct" : "incorrect",
+      optionIndex, // Pass the selected option index
     );
   };
 
@@ -257,6 +336,10 @@ const QuizClient = ({
     );
   }
 
+  // Check if current question is answered and get status
+  const currentQuestionStatus = getQuestionStatus(currentFlashcard._id);
+  const shouldShowAnswer = showAnswer || currentQuestionStatus !== null;
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4 font-sans">
       <div className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-xl">
@@ -294,25 +377,63 @@ const QuizClient = ({
         </div>
 
         <ul className="space-y-4">
-          {currentFlashcard.options.map((option, index) => (
-            <li
-              key={index}
-              onClick={() => handleAnswerClick(index)}
-              className={`cursor-pointer rounded-lg border-2 p-4 transition-all duration-300 ${showAnswer && index === currentFlashcard.correctAnswerIndex ? "border-green-500 bg-green-100 font-bold" : ""} ${showAnswer && index !== currentFlashcard.correctAnswerIndex && index === selectedOptionIndex ? "border-red-500 bg-red-100 text-gray-500 line-through" : ""} ${!showAnswer ? "border-gray-200 bg-white hover:bg-gray-50" : ""} `}
-            >
-              {option}
-            </li>
-          ))}
+          {currentFlashcard.options.map((option, index) => {
+            const isCorrectAnswer =
+              index === currentFlashcard.correctAnswerIndex;
+            const isUserSelected = index === selectedOptionIndex;
+            const isAnswered = currentQuestionStatus !== null;
+
+            console.log("Rendering option:", {
+              index,
+              option,
+              isCorrectAnswer,
+              isUserSelected,
+              selectedOptionIndex,
+              currentQuestionStatus,
+              shouldShowAnswer,
+            });
+
+            // Determine styling based on whether question is answered
+            let optionClasses =
+              "cursor-pointer rounded-lg border-2 p-4 transition-all duration-300 ";
+
+            if (shouldShowAnswer) {
+              if (isCorrectAnswer) {
+                // Always highlight correct answer in green when showing answer
+                optionClasses += "border-green-500 bg-green-100 font-bold ";
+              } else if (isUserSelected && !isCorrectAnswer) {
+                // Highlight user's wrong selection in red for any incorrect answer
+                optionClasses +=
+                  "border-red-500 bg-red-100 text-gray-500 line-through ";
+              } else {
+                // Other options when answer is shown
+                optionClasses += "border-gray-200 bg-gray-50 text-gray-600 ";
+              }
+            } else {
+              // Question not answered yet - normal interactive state
+              optionClasses += "border-gray-200 bg-white hover:bg-gray-50 ";
+            }
+
+            return (
+              <li
+                key={index}
+                onClick={() => handleAnswerClick(index)}
+                className={optionClasses}
+              >
+                {option}
+              </li>
+            );
+          })}
         </ul>
 
-        {showAnswer && (
+        {shouldShowAnswer && (
           <div className="mt-6 rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
             <h3 className="font-bold text-blue-800">Explanation:</h3>
             <p className="text-gray-700">{currentFlashcard.explanation}</p>
           </div>
         )}
 
-        {showAnswer && (
+        {shouldShowAnswer && (
           <div className="mt-6 text-center">
             <button
               onClick={handleNextQuestion}
