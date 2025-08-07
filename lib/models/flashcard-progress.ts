@@ -5,6 +5,7 @@ export interface IFlashcardProgress extends Document {
   clerkId: string; // The Clerk ID of the user
   flashcardId: Types.ObjectId; // Reference to the specific Flashcard
   status: "correct" | "incorrect"; // The last recorded status for this attempt
+  selectedOptionIndex?: number; // The index of the user's selected answer (optional)
   createdAt: Date; // When this progress record was first created
   updatedAt: Date; // When this progress record was last updated (e.g., status changed from incorrect to correct)
 }
@@ -25,6 +26,10 @@ const FlashcardProgressSchema = new Schema<IFlashcardProgress>(
       type: String,
       enum: ["correct", "incorrect"], // The last outcome of the flashcard attempt
       required: true,
+    },
+    selectedOptionIndex: {
+      type: Number,
+      required: false,
     },
   },
   {

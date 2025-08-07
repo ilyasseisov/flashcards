@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 interface ProgressData {
   flashcardId: string;
   status: "correct" | "incorrect";
+  selectedOptionIndex?: number;
 }
 
 export async function saveQuizProgress(progressData: ProgressData[]) {
@@ -39,6 +40,9 @@ export async function saveQuizProgress(progressData: ProgressData[]) {
           flashcardId: progress.flashcardId,
           status: progress.status,
           updatedAt: new Date(),
+          ...(progress.selectedOptionIndex !== undefined && {
+            selectedOptionIndex: progress.selectedOptionIndex,
+          }),
         },
         {
           upsert: true, // Create if doesn't exist, update if exists

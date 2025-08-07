@@ -171,6 +171,7 @@ const QuizClient = ({
       const progressData = progress.map((p) => ({
         flashcardId: p.flashcardId,
         status: p.status,
+        selectedOptionIndex: p.selectedOptionIndex,
       }));
 
       // Save progress to database
