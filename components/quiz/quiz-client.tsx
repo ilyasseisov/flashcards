@@ -439,7 +439,9 @@ const QuizClient = ({
               onClick={handleNextQuestion}
               className="rounded-full bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg transition-colors hover:bg-indigo-700"
             >
-              Next Question
+              {currentFlashcardIndex === flashcards.length - 1
+                ? "Finish Quiz"
+                : "Next Question"}
             </button>
           </div>
         )}
