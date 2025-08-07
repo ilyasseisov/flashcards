@@ -28,12 +28,16 @@ import { usePathname } from "next/navigation";
 import ROUTES from "@/constants/routes";
 // data fetching
 import { getNavCategoriesAndSubcategories } from "@/lib/actions/navigation"; // Import the server action
+import { getQuizProgressBySubcategory } from "@/lib/actions/quiz-progress";
+import { useAuth } from "@clerk/nextjs";
 
 // Define the structure of the data fetched from the server action
 interface NavSubItem {
   title: string;
   slug: string;
   url: string;
+  // Add subcategoryId for progress lookup
+  subcategoryId?: string;
 }
 
 interface NavMainItem {
@@ -43,29 +47,50 @@ interface NavMainItem {
   items: NavSubItem[];
 }
 
+interface SubcategoryQuizProgress {
+  completed: boolean;
+  score: number; // 0-100
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { userId } = useAuth();
   const [navData, setNavData] = React.useState<NavMainItem[]>([]);
+  const [progress, setProgress] = React.useState<
+    Record<string, SubcategoryQuizProgress>
+  >({});
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const fetchNavData = async () => {
+    const fetchNavAndProgress = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await getNavCategoriesAndSubcategories();
-        setNavData(data);
-      } catch (err: any) {
-        console.error("Failed to fetch navigation data:", err);
+        const nav = await getNavCategoriesAndSubcategories();
+        setNavData(nav);
+        if (userId) {
+          // Fetch progress only if user is logged in
+          const prog = await getQuizProgressBySubcategory(userId);
+          setProgress(prog);
+        } else {
+          setProgress({});
+        }
+      } catch (err: unknown) {
+        console.error(
+          "Failed to fetch navigation/progress data:",
+          err as Error,
+        );
         setError("Failed to load navigation. Please try again.");
       } finally {
         setIsLoading(false);
       }
     };
+    fetchNavAndProgress();
+  }, [userId]);
 
-    fetchNavData();
-  }, []); // Empty dependency array means this runs once on mount
+  // Helper to get subcategoryId from navData (since navData doesn't have subcategoryId, we need to add it in the server action in the future)
+  // For now, we will not show icons if subcategoryId is not available
 
   return (
     <>
@@ -95,8 +120,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               ) : navData.length > 0 ? (
                 navData.map((item) => (
                   <Collapsible
-                    key={item.slug} // Use slug as key
-                    // defaultOpen logic: Open if current pathname starts with category URL
+                    key={item.slug}
                     defaultOpen={pathname.startsWith(item.url)}
                     className="group/collapsible"
                   >
@@ -111,19 +135,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     {item.items?.length ? (
                       <CollapsibleContent>
                         <SidebarMenuSub className="ml-0 gap-2 border-l-0 px-1.5">
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.slug}>
-                              {" "}
-                              {/* Use slug as key */}
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={pathname === subItem.url}
-                                className="text-lg"
-                              >
-                                <Link href={subItem.url}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
+                          {item.items.map((subItem) => {
+                            const subcatProgress = progress[subItem.slug];
+                            let textColor = "text-gray-500";
+                            if (subcatProgress) {
+                              if (
+                                subcatProgress.completed &&
+                                subcatProgress.score === 100
+                              ) {
+                                textColor = "text-green-500";
+                              } else if (
+                                subcatProgress.completed &&
+                                subcatProgress.score < 100
+                              ) {
+                                textColor = "text-orange-400";
+                              }
+                            }
+                            return (
+                              <SidebarMenuSubItem key={subItem.slug}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={pathname === subItem.url}
+                                  className={`flex items-center gap-2 text-lg`}
+                                >
+                                  <Link
+                                    href={subItem.url}
+                                    className={`flex items-center gap-2 ${textColor}`}
+                                  >
+                                    {subItem.title}
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     ) : null}

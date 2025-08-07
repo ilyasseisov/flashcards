@@ -8,6 +8,13 @@ import { Types } from "mongoose";
 // next
 import { notFound } from "next/navigation";
 import Link from "next/link";
+// icons
+import { BadgeCheck, BadgeAlert } from "lucide-react";
+// auth
+import { auth } from "@clerk/nextjs/server";
+// quiz progress
+import { getQuizProgressBySubcategory } from "@/lib/actions/quiz-progress";
+
 // type
 interface PageProps {
   params: {
@@ -49,6 +56,18 @@ export default async function Page({ params }: PageProps) {
     // For example, you might want to show an empty list or a different error message
   }
 
+  // 5. Fetch user progress for these subcategories
+  let progress: Record<string, { completed: boolean; score: number }> = {};
+  try {
+    const { userId } = await auth();
+    if (userId) {
+      progress = await getQuizProgressBySubcategory(userId);
+    }
+  } catch (e) {
+    // If auth or progress fails, just show no icons
+    progress = {};
+  }
+
   // return
   return (
     <main className="container mx-auto p-4 md:p-8">
@@ -65,19 +84,46 @@ export default async function Page({ params }: PageProps) {
         </h2>
         {subcategories.length > 0 ? (
           <ul className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {subcategories.map((subcat) => (
-              <li
-                key={(subcat._id as Types.ObjectId).toString()}
-                className="rounded-lg bg-white shadow-md transition-shadow duration-300 hover:shadow-lg"
-              >
-                <Link
-                  href={`/flashcards/${categorySlug}/${subcat.slug}`}
-                  className="block p-6 text-center text-xl font-medium text-gray-900 hover:text-indigo-700"
+            {subcategories.map((subcat) => {
+              // Use subcat._id as key for progress lookup
+              const subcatId = (subcat._id as Types.ObjectId).toString();
+              const subcatProgress = progress[subcatId];
+              let icon = null;
+              if (subcatProgress) {
+                if (subcatProgress.completed && subcatProgress.score === 100) {
+                  icon = (
+                    <BadgeCheck
+                      className="ml-2 inline text-green-500"
+                      strokeWidth={2.5}
+                    />
+                  );
+                } else if (
+                  subcatProgress.completed &&
+                  subcatProgress.score < 100
+                ) {
+                  icon = (
+                    <BadgeAlert
+                      className="ml-2 inline text-orange-400"
+                      strokeWidth={2.5}
+                    />
+                  );
+                }
+              }
+              return (
+                <li
+                  key={subcatId}
+                  className="rounded-lg bg-white shadow-md transition-shadow duration-300 hover:shadow-lg"
                 >
-                  {subcat.name}
-                </Link>
-              </li>
-            ))}
+                  <Link
+                    href={`/flashcards/${categorySlug}/${subcat.slug}`}
+                    className="flex items-center justify-center gap-2 p-6 text-center text-xl font-medium text-gray-900 hover:text-indigo-700"
+                  >
+                    {subcat.name}
+                    {icon}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="text-center text-lg text-gray-600">
