@@ -136,31 +136,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <CollapsibleContent>
                         <SidebarMenuSub className="ml-0 gap-2 border-l-0 px-1.5">
                           {item.items.map((subItem) => {
+                            // Map status to literal Tailwind classes
+                            const statusColor: Record<string, string> = {
+                              correct: "text-green-500",
+                              partial: "text-orange-400",
+                              none: "text-gray-500",
+                            };
+                            let status = "none";
                             const subcatProgress = progress[subItem.slug];
-                            let textColor = "text-gray-500";
                             if (subcatProgress) {
                               if (
                                 subcatProgress.completed &&
                                 subcatProgress.score === 100
                               ) {
-                                textColor = "text-green-500";
+                                status = "correct";
                               } else if (
                                 subcatProgress.completed &&
                                 subcatProgress.score < 100
                               ) {
-                                textColor = "text-orange-400";
+                                status = "partial";
                               }
                             }
+                            const textColor = statusColor[status];
+                            console.log(textColor);
                             return (
                               <SidebarMenuSubItem key={subItem.slug}>
                                 <SidebarMenuSubButton
                                   asChild
                                   isActive={pathname === subItem.url}
-                                  className={`flex items-center gap-2 text-lg`}
+                                  className={`flex items-center gap-2 text-lg ${textColor}`}
                                 >
                                   <Link
                                     href={subItem.url}
-                                    className={`flex items-center gap-2 ${textColor}`}
+                                    className={`flex items-center gap-2`}
                                   >
                                     {subItem.title}
                                   </Link>

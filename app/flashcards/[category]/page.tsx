@@ -1,8 +1,8 @@
 // db connect
 import dbConnect from "@/lib/db";
 // models
-import CategoryModel, { ICategory } from "@/lib/models/category";
-import SubcategoryModel, { ISubcategory } from "@/lib/models/subcategory";
+import CategoryModel from "@/lib/models/category";
+import SubcategoryModel from "@/lib/models/subcategory";
 // mongoose
 import { Types } from "mongoose";
 // next
@@ -24,8 +24,18 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
   const categorySlug = params.category;
-  let category: ICategory | null = null;
-  let subcategories: ISubcategory[] = [];
+  // Use lean-safe shapes for better type compatibility with `.lean()`
+  type CategoryLean = { _id: Types.ObjectId; name: string; slug: string };
+  type SubcategoryLean = {
+    _id: Types.ObjectId;
+    name: string;
+    slug: string;
+    categoryId: Types.ObjectId;
+    order: number;
+  };
+
+  let category: CategoryLean | null = null;
+  let subcategories: SubcategoryLean[] = [];
 
   // 1. Connect to the database
   await dbConnect();
@@ -34,7 +44,7 @@ export default async function Page({ params }: PageProps) {
   // IMPORTANT: Keep this OUTSIDE of try-catch so notFound() can work properly
   category = await CategoryModel.findOne({ slug: categorySlug })
     .select("_id name slug")
-    .lean();
+    .lean<CategoryLean>();
 
   // 3. Handle case where category is not found
   if (!category) {
@@ -46,10 +56,10 @@ export default async function Page({ params }: PageProps) {
   try {
     subcategories = await SubcategoryModel.find({ categoryId: category._id })
       .sort({ order: 1 }) // Sort by 'order' field in ascending order
-      .lean();
+      .lean<SubcategoryLean[]>();
 
     console.log(subcategories);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // This catch block will only handle actual database errors for subcategories
     console.error("Database error fetching subcategories:", error);
     // You can handle subcategory fetch errors here if needed
@@ -63,7 +73,7 @@ export default async function Page({ params }: PageProps) {
     if (userId) {
       progress = await getQuizProgressBySubcategory(userId);
     }
-  } catch (e) {
+  } catch {
     // If auth or progress fails, just show no icons
     progress = {};
   }
