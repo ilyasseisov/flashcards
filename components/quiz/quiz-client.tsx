@@ -79,6 +79,13 @@ const QuizClient = ({
     return progressRecord?.status || null;
   };
 
+  // Helper function to check if current question has been answered
+  const isCurrentQuestionAnswered = () => {
+    const currentFlashcard = flashcards[currentFlashcardIndex];
+    if (!currentFlashcard) return false;
+    return getQuestionStatus(currentFlashcard._id) !== null;
+  };
+
   // Helper function to get the user's selected answer for a question
   const getUserSelectedAnswer = (flashcardId: string) => {
     const progressRecord = progress.find((p) => p.flashcardId === flashcardId);
