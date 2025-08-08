@@ -9,7 +9,7 @@ import { Types } from "mongoose";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 // icons
-import { BadgeCheck, BadgeAlert } from "lucide-react";
+import { BadgeCheck, BadgeAlert, BadgeX } from "lucide-react";
 // auth
 import { auth } from "@clerk/nextjs/server";
 // quiz progress
@@ -104,6 +104,16 @@ export default async function Page({ params }: PageProps) {
                   icon = (
                     <BadgeCheck
                       className="ml-2 inline text-green-500"
+                      strokeWidth={2.5}
+                    />
+                  );
+                } else if (
+                  subcatProgress.completed &&
+                  subcatProgress.score === 0
+                ) {
+                  icon = (
+                    <BadgeX
+                      className="ml-2 inline text-red-500"
                       strokeWidth={2.5}
                     />
                   );

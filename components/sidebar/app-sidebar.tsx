@@ -139,6 +139,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             // Map status to literal Tailwind classes
                             const statusColor: Record<string, string> = {
                               correct: "text-green-500",
+                              wrong: "text-red-500",
                               partial: "text-orange-400",
                               none: "text-gray-500",
                             };
@@ -153,6 +154,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 subcatProgress.score === 100
                               ) {
                                 status = "correct";
+                              } else if (
+                                subcatProgress.completed &&
+                                subcatProgress.score === 0
+                              ) {
+                                // All answers attempted and none correct
+                                status = "wrong";
                               } else if (
                                 subcatProgress.completed &&
                                 subcatProgress.score < 100
