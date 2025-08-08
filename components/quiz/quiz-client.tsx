@@ -6,7 +6,6 @@ import { useQuizStore } from "@/stores/quizStore"; // Import our Zustand store
 import { IFlashcardProgress } from "@/lib/models/flashcard-progress"; // Import the type
 import { IFlashcard } from "@/lib/models/flashcard"; // Import the type
 import { saveQuizProgress } from "@/lib/actions/save-quiz-progress"; // Import our server action
-import Link from "next/link";
 
 // Define the props this component will receive from the Server Component
 interface QuizClientProps {
@@ -16,12 +15,32 @@ interface QuizClientProps {
   subcategorySlug?: string; // Add subcategory slug for navigation
 }
 
+// Helper function to convert IFlashcard to Flashcard (store interface)
+const convertFlashcard = (flashcard: IFlashcard) => ({
+  _id: flashcard._id?.toString() || "",
+  question: flashcard.question,
+  options: flashcard.options,
+  correctAnswerIndex: flashcard.correctAnswerIndex,
+  explanation: flashcard.explanation,
+  subcategoryId: flashcard.subcategoryId?.toString() || "",
+  order: flashcard.order,
+});
+
+// Helper function to convert IFlashcardProgress to FlashcardProgress (store interface)
+const convertFlashcardProgress = (progress: IFlashcardProgress) => ({
+  flashcardId: progress.flashcardId?.toString() || "",
+  clerkId: progress.clerkId,
+  status: progress.status,
+  selectedOptionIndex: progress.selectedOptionIndex,
+  createdAt: progress.createdAt,
+  updatedAt: progress.updatedAt,
+});
+
 // Our main interactive component
 const QuizClient = ({
   initialFlashcards,
   initialProgress,
   categorySlug,
-  subcategorySlug,
 }: QuizClientProps) => {
   // Use local state to manage the UI for the current flashcard, like showing the answer.
   const [showAnswer, setShowAnswer] = useState(false);
@@ -60,20 +79,9 @@ const QuizClient = ({
     return progressRecord?.status || null;
   };
 
-  // Helper function to check if current question has been answered
-  const isCurrentQuestionAnswered = () => {
-    const currentFlashcard = flashcards[currentFlashcardIndex];
-    if (!currentFlashcard) return false;
-    return getQuestionStatus(currentFlashcard._id) !== null;
-  };
-
   // Helper function to get the user's selected answer for a question
   const getUserSelectedAnswer = (flashcardId: string) => {
     const progressRecord = progress.find((p) => p.flashcardId === flashcardId);
-    console.log("getUserSelectedAnswer called:", {
-      flashcardId,
-      progressRecord,
-    });
 
     if (!progressRecord) return null;
 
@@ -82,21 +90,15 @@ const QuizClient = ({
       "selectedOptionIndex" in progressRecord &&
       progressRecord.selectedOptionIndex !== undefined
     ) {
-      console.log(
-        "Found stored selectedOptionIndex:",
-        progressRecord.selectedOptionIndex,
-      );
       return progressRecord.selectedOptionIndex;
     }
 
     // Fallback: if correct, they must have selected the correct answer
     const flashcard = flashcards.find((f) => f._id === flashcardId);
     if (progressRecord.status === "correct" && flashcard) {
-      console.log("Correct answer fallback:", flashcard.correctAnswerIndex);
       return flashcard.correctAnswerIndex;
     }
 
-    console.log("No selected option found, returning null");
     return null; // For old incorrect answers without stored selection
   };
 
@@ -196,9 +198,13 @@ const QuizClient = ({
 
     // Clear store and initialize with new data every time
     if (initialFlashcards.length > 0) {
-      console.log("Initializing Zustand store with server data.");
       clearStore(); // Clear old data first
-      initializeQuiz(initialFlashcards, initialProgress);
+
+      // Convert Mongoose documents to store-compatible types
+      const convertedFlashcards = initialFlashcards.map(convertFlashcard);
+      const convertedProgress = initialProgress.map(convertFlashcardProgress);
+
+      initializeQuiz(convertedFlashcards, convertedProgress);
     }
   }, [initialFlashcards, initialProgress, initializeQuiz, clearStore]); // Include dependencies to reinitialize on route change
 
@@ -213,14 +219,6 @@ const QuizClient = ({
         if (isAnswered) {
           const userAnswer = getUserSelectedAnswer(currentFlashcard._id);
           setSelectedOptionIndex(userAnswer);
-          console.log("Setting selected option for useEffect:", {
-            questionId: currentFlashcard._id,
-            userAnswer,
-            currentIndex: currentFlashcardIndex,
-            progressData: progress.find(
-              (p) => p.flashcardId === currentFlashcard._id,
-            ),
-          });
         } else {
           setSelectedOptionIndex(null);
         }
@@ -465,16 +463,6 @@ const QuizClient = ({
               index === currentFlashcard.correctAnswerIndex;
             const isUserSelected = index === selectedOptionIndex;
             const isAnswered = currentQuestionStatus !== null;
-
-            console.log("Rendering option:", {
-              index,
-              option,
-              isCorrectAnswer,
-              isUserSelected,
-              selectedOptionIndex,
-              currentQuestionStatus,
-              shouldShowAnswer,
-            });
 
             // Determine styling based on whether question is answered
             let optionClasses =
