@@ -37,7 +37,7 @@ interface NavSubItem {
   slug: string;
   url: string;
   // Add subcategoryId for progress lookup
-  subcategoryId?: string;
+  subcategoryId: string;
 }
 
 interface NavMainItem {
@@ -143,7 +143,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                               none: "text-gray-500",
                             };
                             let status = "none";
-                            const subcatProgress = progress[subItem.slug];
+                            // Progress is keyed by subcategoryId
+                            const subcatProgress = subItem.subcategoryId
+                              ? progress[subItem.subcategoryId]
+                              : undefined;
                             if (subcatProgress) {
                               if (
                                 subcatProgress.completed &&
@@ -158,7 +161,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                               }
                             }
                             const textColor = statusColor[status];
-                            console.log(textColor);
                             return (
                               <SidebarMenuSubItem key={subItem.slug}>
                                 <SidebarMenuSubButton

@@ -12,6 +12,8 @@ interface NavSubItem {
   title: string;
   slug: string; // Use slug for the URL
   url: string;
+  // Include subcategoryId so clients can map progress keyed by subcategory id
+  subcategoryId: string;
 }
 
 interface NavMainItem {
@@ -59,6 +61,7 @@ export async function getNavCategoriesAndSubcategories(): Promise<
           title: subcat.name,
           slug: subcat.slug, // Use slug for the subcategory URL
           url: `${categoryUrl}/${subcat.slug}`, // Construct the full URL
+          subcategoryId: (subcat._id as Types.ObjectId).toString(),
         }));
 
       return {
